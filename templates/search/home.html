@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>PhotoMatch | Find every moment</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #0f172a;
+      background: #f8fafc;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(219, 234, 254, 0.7), transparent 34rem),
+        #f8fafc;
+      line-height: 1.5;
+    }
+    button, input { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    .navbar {
+      align-items: center;
+      backdrop-filter: blur(12px);
+      background: rgba(248, 250, 252, 0.82);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.82);
+      display: flex;
+      gap: 16px;
+      justify-content: space-between;
+      padding: 14px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .brand {
+      align-items: center;
+      display: inline-flex;
+      font-size: 1.08rem;
+      font-weight: 800;
+      gap: 9px;
+      letter-spacing: -0.03em;
+      text-decoration: none;
+    }
+    .brand-mark {
+      align-items: center;
+      background: #2563eb;
+      border-radius: 10px;
+      box-shadow: 0 5px 14px rgba(37, 99, 235, 0.24);
+      color: #fff;
+      display: inline-flex;
+      height: 32px;
+      justify-content: center;
+      width: 32px;
+    }
+    .ai-badge {
+      background: #dbeafe;
+      border-radius: 999px;
+      color: #1d4ed8;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      padding: 4px 8px;
+      white-space: nowrap;
+    }
+    .nav-links {
+      display: none;
+      gap: 24px;
+      margin-left: auto;
+    }
+    .nav-links a {
+      color: #475569;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .nav-links a:hover, .nav-links a:focus-visible { color: #2563eb; }
+    .container {
+      margin: 0 auto;
+      max-width: 1160px;
+      padding: 52px 20px 64px;
+    }
+    .hero {
+      max-width: 760px;
+      padding: 18px 0 34px;
+    }
+    .eyebrow {
+      align-items: center;
+      color: #2563eb;
+      display: flex;
+      font-size: 0.76rem;
+      font-weight: 800;
+      gap: 8px;
+      letter-spacing: 0.1em;
+      margin: 0 0 16px;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      background: #3b82f6;
+      border-radius: 50%;
+      content: "";
+      height: 7px;
+      width: 7px;
+    }
+    h1 {
+      font-size: clamp(2.45rem, 9vw, 5.25rem);
+      letter-spacing: -0.065em;
+      line-height: 0.98;
+      margin: 0 0 22px;
+      max-width: 760px;
+    }
+    .hero-copy {
+      color: #475569;
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      line-height: 1.65;
+      margin: 0;
+      max-width: 660px;
+    }
+    .research-note {
+      color: #64748b;
+      font-size: 0.82rem;
+      margin: 18px 0 0;
+    }
+    .research-note strong { color: #334155; }
+    .upload-panel {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+      max-width: 760px;
+      padding: 22px;
+    }
+    .section-heading {
+      align-items: flex-start;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    h2 {
+      font-size: 1.15rem;
+      letter-spacing: -0.025em;
+      line-height: 1.25;
+      margin: 0;
+    }
+    .section-kicker {
+      color: #64748b;
+      font-size: 0.78rem;
+      margin: 5px 0 0;
+    }
+    .dropzone {
+      align-items: center;
+      border: 1.5px dashed #bfdbfe;
+      border-radius: 14px;
+      cursor: pointer;
+      display: flex;
+      gap: 14px;
+      min-height: 116px;
+      padding: 18px;
+      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+    .dropzone:hover, .dropzone:focus-within, .dropzone.is-dragging {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+    }
+    .upload-icon {
+      align-items: center;
+      background: #dbeafe;
+      border-radius: 12px;
+      color: #2563eb;
+      display: inline-flex;
+      flex: 0 0 46px;
+      height: 46px;
+      justify-content: center;
+      width: 46px;
+    }
+    .dropzone-copy { min-width: 0; }
+    .dropzone-title {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 750;
+    }
+    .dropzone-subtitle {
+      color: #64748b;
+      display: block;
+      font-size: 0.8rem;
+      margin-top: 3px;
+    }
+    .file-input {
+      height: 1px;
+      opacity: 0;
+      overflow: hidden;
+      position: absolute;
+      width: 1px;
+    }
+    .upload-actions {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .search-button, .camera-button {
+      align-items: center;
+      border: 0;
+      border-radius: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      justify-content: center;
+      min-height: 48px;
+      transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+    .search-button {
+      background: #2563eb;
+      box-shadow: 0 7px 16px rgba(37, 99, 235, 0.22);
+      color: #fff;
+      flex: 1;
+      font-size: 0.94rem;
+      font-weight: 750;
+      padding: 12px 18px;
+    }
+    .search-button:hover, .search-button:focus-visible {
+      background: #1d4ed8;
+      box-shadow: 0 9px 20px rgba(37, 99, 235, 0.3);
+      transform: translateY(-1px);
+    }
+    .search-button:active { transform: translateY(1px); }
+    .camera-button {
+      background: #f1f5f9;
+      color: #334155;
+      padding: 12px 15px;
+    }
+    .camera-button:hover, .camera-button:focus-visible { background: #e2e8f0; }
+    .privacy {
+      align-items: flex-start;
+      color: #47615a;
+      display: flex;
+      font-size: 0.78rem;
+      gap: 8px;
+      line-height: 1.45;
+      margin: 16px 2px 0;
+    }
+    .privacy svg { color: #16a34a; flex: 0 0 16px; margin-top: 2px; }
+    .panel {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      padding: 18px;
+    }
+    .error { color: #b91c1c; margin: 0; }
+    .empty { color: #475569; font-weight: 650; margin: 0; }
+    .results-heading {
+      align-items: baseline;
+      display: flex;
+      justify-content: space-between;
+      margin: 48px 0 16px;
+    }
+    .results-heading p { color: #64748b; font-size: 0.82rem; margin: 0; }
+    .results {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      transition: box-shadow 180ms ease, transform 180ms ease;
+    }
+    .card:hover, .card:focus-within {
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+      transform: translateY(-4px);
+    }
+    .photo-button {
+      background: #e2e8f0;
+      border: 0;
+      border-radius: 0;
+      cursor: pointer;
+      display: block;
+      min-height: 0;
+      padding: 0;
+      position: relative;
+      width: 100%;
+    }
+    .photo-button::after {
+      background: linear-gradient(transparent, rgba(15, 23, 42, 0.45));
+      content: "";
+      inset: 45% 0 0;
+      opacity: 0;
+      position: absolute;
+      transition: opacity 180ms ease;
+    }
+    .card:hover .photo-button::after, .card:focus-within .photo-button::after { opacity: 1; }
+    .card img {
+      aspect-ratio: 1 / 1;
+      background: #e2e8f0;
+      display: block;
+      object-fit: cover;
+      width: 100%;
+    }
+    .card-body { padding: 13px 14px 14px; }
+    .match-row { align-items: center; display: flex; justify-content: space-between; gap: 6px; }
+    .match-tag {
+      background: #dcfce7;
+      border-radius: 999px;
+      color: #166534;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 4px 8px;
+    }
+    .event-label { color: #64748b; font-size: 0.76rem; }
+    .high-res {
+      color: #2563eb;
+      display: inline-block;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-top: 9px;
+      text-decoration: none;
+    }
+    .high-res:hover { text-decoration: underline; }
+    footer {
+      border-top: 1px solid #e2e8f0;
+      color: #64748b;
+      font-size: 0.8rem;
+      margin-top: 64px;
+      padding-top: 24px;
+    }
+    footer h2 { color: #334155; font-size: 0.9rem; }
+    footer p { margin: 7px 0; }
+    footer a { color: #2563eb; font-weight: 700; }
+    .modal[hidden] { display: none; }
+    .modal {
+      align-items: center;
+      backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.78);
+      display: flex;
+      inset: 0;
+      justify-content: center;
+      padding: 20px;
+      position: fixed;
+      z-index: 20;
+    }
+    .modal-content {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 16px;
+      max-height: 90vh;
+      max-width: 960px;
+      padding: 8px;
+      position: relative;
+      width: 100%;
+    }
+    .modal-image {
+      border-radius: 10px;
+      display: block;
+      max-height: 82vh;
+      max-width: 100%;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+    .modal-close {
+      align-items: center;
+      background: #fff;
+      border: 0;
+      border-radius: 50%;
+      color: #0f172a;
+      cursor: pointer;
+      display: flex;
+      font-size: 1.4rem;
+      height: 42px;
+      justify-content: center;
+      line-height: 1;
+      min-height: 42px;
+      padding: 0;
+      position: absolute;
+      right: 8px;
+      top: -52px;
+      width: 42px;
+    }
+    @media (min-width: 640px) {
+      .navbar { padding: 15px 32px; }
+      .nav-links { display: flex; }
+      .container { padding: 72px 32px 80px; }
+      .results { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (min-width: 960px) {
+      .container { padding-left: 48px; padding-right: 48px; }
+      .results { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <a class="brand" href="/" aria-label="PhotoMatch home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2l1.1-1.5h4.8L15.5 6h2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z" stroke="currentColor" stroke-width="1.8"/>
+          <circle cx="12" cy="12.5" r="3.2" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+      </span>
+      <span>PhotoMatch</span>
+      <span class="ai-badge">Powered by AI</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary navigation">
+      <a href="#how-it-works">How it Works</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#organizers">Enterprise / Event Organizers</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero" id="how-it-works" aria-labelledby="page-title">
+      <p class="eyebrow">Your event, in every frame</p>
+      <h1 id="page-title">Find every moment you were part of.</h1>
+      <p class="hero-copy">
+        Upload a selfie and instantly discover the event photos you are in.
+        PhotoMatch uses facial recognition to turn a gallery of thousands of moments
+        into your personal highlight reel.
+      </p>
+      <p class="research-note">
+        A live research demo by <strong>Nicholas Borges de Vasconcelos</strong>, presented at SBrT 2026.
+      </p>
+    </section>
+
+    <section class="upload-panel" aria-labelledby="upload-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="upload-title">Start your search</h2>
+          <p class="section-kicker">One photo is all it takes.</p>
+        </div>
+      </div>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label class="dropzone" id="dropzone" for="selfie_file">
+          <span class="upload-icon" aria-hidden="true">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="dropzone-copy">
+            <span class="dropzone-title" id="file-label">Drop a selfie here or tap to browse</span>
+            <span class="dropzone-subtitle">JPG or PNG · processed securely in memory</span>
+          </span>
+        </label>
+        <input class="file-input" id="selfie_file" name="selfie_file" type="file" accept="image/*">
+        <input class="file-input" id="selfie_capture" name="selfie_capture" type="file" accept="image/*" capture="user">
+
+        <div class="upload-actions">
+          <button class="search-button" type="submit">Find my photos <span aria-hidden="true">&nbsp;→</span></button>
+          <button class="camera-button" id="camera-trigger" type="button" aria-label="Take a selfie with your camera">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2l1.1-1.5h4.8L15.5 6h2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="12" cy="12.5" r="3.2" stroke="currentColor" stroke-width="1.8"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+      <p class="privacy" id="privacy">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3 19 6v5c0 4.5-3 8.1-7 10-4-1.9-7-5.5-7-10V6l7-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span><strong>Your privacy matters.</strong> Your selfie is used only in memory to search this event's photo set. It is never stored, and this temporary demo is active only for this event.</span>
+      </p>
+    </section>
+
+    {% if error_message %}
+      <section class="panel"><p class="error">{{ error_message }}</p></section>
+    {% endif %}
+
+    {% if no_match_message %}
+      <section class="panel"><p class="empty">{{ no_match_message }}</p></section>
+    {% endif %}
+
+    {% if results %}
+      <div class="results-heading">
+        <h2>Your moments</h2>
+        <p>Tap a photo to explore</p>
+      </div>
+      <section class="results">
+        {% for result in results %}
+          <article class="card">
+            {% if result.preview_url %}
+              <button class="photo-button" type="button" data-image-url="{{ result.preview_url }}" data-image-alt="Event photo" aria-label="Open event photo larger">
+                <img src="{{ result.preview_url }}" alt="Event photo">
+              </button>
+            {% else %}
+              <img src="" alt="No preview available">
+            {% endif %}
+            <div class="card-body">
+              <div class="match-row">
+                <span class="match-tag">Strong match</span>
+                <span class="event-label">Event gallery</span>
+              </div>
+              {% if result.preview_url %}
+                <a class="high-res" href="{{ result.preview_url }}" target="_blank" rel="noopener">Open high-res <span aria-hidden="true">↗</span></a>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </section>
+    {% endif %}
+
+    <footer id="organizers">
+      <h2>Built for event memories, grounded in research.</h2>
+      <p><a href="{{ article_url|default:'#' }}" {% if not article_url %}title="Article URL to be added"{% endif %}>Designing a Face Recognition System for Event Photography (SBrT 2026)</a></p>
+      <p>Research team: Nicholas Borges de Vasconcelos, Mel Bozzola, Adam Bennet Bleiel, Rigel P. Fernandes, Victor A. Azevedo Costa Santos, and Clayton J. A. Silva.</p>
+    </footer>
+  </main>
+
+  <div class="modal" id="photo-modal" role="dialog" aria-modal="true" aria-label="Larger photo view" hidden>
+    <div class="modal-content">
+      <button class="modal-close" id="modal-close" type="button" aria-label="Close larger photo">&times;</button>
+      <img class="modal-image" id="modal-image" alt="">
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const modal = document.getElementById("photo-modal");
+      const modalImage = document.getElementById("modal-image");
+      const closeButton = document.getElementById("modal-close");
+      const dropzone = document.getElementById("dropzone");
+      const fileInput = document.getElementById("selfie_file");
+      const captureInput = document.getElementById("selfie_capture");
+      const fileLabel = document.getElementById("file-label");
+      let lastTrigger = null;
+
+      const closeModal = () => {
+        modal.hidden = true;
+        modalImage.removeAttribute("src");
+        if (lastTrigger) lastTrigger.focus();
+      };
+
+      document.querySelectorAll(".photo-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          lastTrigger = button;
+          modalImage.src = button.dataset.imageUrl;
+          modalImage.alt = button.dataset.imageAlt || "Larger event photo";
+          modal.hidden = false;
+          closeButton.focus();
+        });
+      });
+
+      document.getElementById("camera-trigger").addEventListener("click", () => captureInput.click());
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files.length) fileLabel.textContent = fileInput.files[0].name;
+      });
+      captureInput.addEventListener("change", () => {
+        if (captureInput.files.length) fileLabel.textContent = captureInput.files[0].name;
+      });
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.add("is-dragging");
+        });
+      });
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.remove("is-dragging");
+        });
+      });
+      dropzone.addEventListener("drop", (event) => {
+        if (event.dataTransfer.files.length) {
+          fileInput.files = event.dataTransfer.files;
+          fileLabel.textContent = event.dataTransfer.files[0].name;
+        }
+      });
+
+      closeButton.addEventListener("click", closeModal);
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) closeModal();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !modal.hidden) closeModal();
+      });
+    })();
+  </script>
+</body>
+</html>

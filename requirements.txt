@@ -1,0 +1,12 @@
+django==4.2.24
+gunicorn==23.0.0
+setuptools
+face_recognition
+opencv-python-headless
+numpy<2
+Pillow
+boto3
+psycopg2-binary
+pgvector
+dj-database-url
+whitenoise

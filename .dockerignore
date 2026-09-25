@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+__pycache__
+*.py[cod]
+db.sqlite3
+.env
+dataset
+dataset_images
+models
+*.pkl
+*.whl
+*.bz2
+README.md
