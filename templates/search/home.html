@@ -435,7 +435,7 @@
           <p class="section-kicker">One photo is all it takes.</p>
         </div>
       </div>
-      <form method="post" enctype="multipart/form-data">
+      <form id="search-form" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <label class="dropzone" id="dropzone" for="selfie_file">
           <span class="upload-icon" aria-hidden="true">
@@ -486,10 +486,12 @@
       <section class="results">
         {% for result in results %}
           <article class="card">
-            {% if result.preview_url %}
-              <button class="photo-button" type="button" data-image-url="{{ result.preview_url }}" data-image-alt="Event photo" aria-label="Open event photo larger">
+            {% if result.preview_url and result.original_url %}
+              <button class="photo-button" type="button" data-image-url="{{ result.original_url }}" data-image-alt="Event photo" aria-label="Open event photo larger">
                 <img src="{{ result.preview_url }}" alt="Event photo">
               </button>
+            {% elif result.preview_url %}
+              <img src="{{ result.preview_url }}" alt="Event photo">
             {% else %}
               <img src="" alt="No preview available">
             {% endif %}
@@ -498,8 +500,8 @@
                 <span class="match-tag">Strong match</span>
                 <span class="event-label">Event gallery</span>
               </div>
-              {% if result.preview_url %}
-                <a class="high-res" href="{{ result.preview_url }}" target="_blank" rel="noopener">Open high-res <span aria-hidden="true">↗</span></a>
+              {% if result.original_url %}
+                <a class="high-res" href="{{ result.original_url }}" target="_blank" rel="noopener">Open high-res <span aria-hidden="true">↗</span></a>
               {% endif %}
             </div>
           </article>
@@ -527,10 +529,48 @@
       const modalImage = document.getElementById("modal-image");
       const closeButton = document.getElementById("modal-close");
       const dropzone = document.getElementById("dropzone");
+      const searchForm = document.getElementById("search-form");
       const fileInput = document.getElementById("selfie_file");
       const captureInput = document.getElementById("selfie_capture");
       const fileLabel = document.getElementById("file-label");
+      const MAX_SELFIE_DIMENSION = 1280;
+      const JPEG_QUALITY = 0.82;
       let lastTrigger = null;
+
+      const resizeSelfie = (file) => new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith("image/")) {
+          resolve(file);
+          return;
+        }
+
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        image.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          const scale = Math.min(1, MAX_SELFIE_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight));
+          if (scale === 1) {
+            resolve(file);
+            return;
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(image.naturalWidth * scale);
+          canvas.height = Math.round(image.naturalHeight * scale);
+          canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error("The selfie could not be resized."));
+              return;
+            }
+            resolve(new File([blob], "selfie.jpg", { type: "image/jpeg" }));
+          }, "image/jpeg", JPEG_QUALITY);
+        };
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("The selfie could not be read."));
+        };
+        image.src = objectUrl;
+      });
 
       const closeModal = () => {
         modal.hidden = true;
@@ -554,6 +594,21 @@
       });
       captureInput.addEventListener("change", () => {
         if (captureInput.files.length) fileLabel.textContent = captureInput.files[0].name;
+      });
+      searchForm.addEventListener("submit", async (event) => {
+        const input = captureInput.files.length ? captureInput : fileInput;
+        if (!input.files.length) return;
+
+        event.preventDefault();
+        try {
+          const resized = await resizeSelfie(input.files[0]);
+          const files = new DataTransfer();
+          files.items.add(resized);
+          input.files = files.files;
+          searchForm.submit();
+        } catch (_error) {
+          searchForm.submit();
+        }
       });
       ["dragenter", "dragover"].forEach((eventName) => {
         dropzone.addEventListener(eventName, (event) => {

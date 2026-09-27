@@ -14,21 +14,36 @@ from django.urls import reverse
 from .forms import QueryUploadForm
 from .runtime import is_running_on_aws
 from .runtime import local_photo_images_dir
+from .runtime import local_photo_thumbnails_dir
 from .runtime import should_use_local_photo_db
 from .s3 import build_presigned_get_url
+from .s3 import build_presigned_thumbnail_url
 from .services import query_vector_matches
 
 
-def _build_preview_url(image_name: str) -> str | None:
-    s3_url = build_presigned_get_url(image_name)
-    if s3_url:
-        return s3_url
+def _build_local_photo_url(image_name: str) -> str | None:
+    if not should_use_local_photo_db():
+        return None
 
-    if should_use_local_photo_db():
-        safe_name = Path(image_name).name
-        return reverse("local_photo_preview", kwargs={"image_name": safe_name})
+    safe_name = Path(image_name).name
+    return reverse("local_photo_preview", kwargs={"image_name": safe_name})
 
-    return None
+
+def _build_local_thumbnail_url(image_name: str) -> str | None:
+    if not should_use_local_photo_db():
+        return None
+
+    safe_name = Path(image_name).name
+    return reverse("local_photo_thumbnail", kwargs={"image_name": safe_name})
+
+
+def _build_urls(image_name: str) -> tuple[str | None, str | None]:
+    thumbnail_url = build_presigned_thumbnail_url(image_name)
+    original_url = build_presigned_get_url(image_name)
+    if thumbnail_url and original_url:
+        return thumbnail_url, original_url
+
+    return _build_local_thumbnail_url(image_name), _build_local_photo_url(image_name)
 
 
 def _aggregate_matches(matches: list[dict]) -> list[dict]:
@@ -44,18 +59,20 @@ def _aggregate_matches(matches: list[dict]) -> list[dict]:
                 "best_distance": float(match["distance"]),
             }
 
-    return sorted(
-        [
+    results = []
+    for item in by_image.values():
+        preview_url, original_url = _build_urls(item["image_name"])
+        results.append(
             {
                 "image_name": item["image_name"],
                 "best_distance": item["best_distance"],
                 "matching_faces": counts[item["image_name"]],
-                "preview_url": _build_preview_url(item["image_name"]),
+                "preview_url": preview_url,
+                "original_url": original_url,
             }
-            for item in by_image.values()
-        ],
-        key=lambda x: x["best_distance"],
-    )
+        )
+
+    return sorted(results, key=lambda x: x["best_distance"])
 
 
 def home_view(request):
@@ -116,14 +133,22 @@ def health_view(_request):
     return JsonResponse({"status": "ok"}, status=200)
 
 
-def local_photo_preview_view(_request, image_name: str):
+def _local_photo_response(image_name: str, photo_dir: Path):
     if is_running_on_aws():
         raise Http404("Not found")
 
     safe_name = Path(image_name).name
-    photo_path = local_photo_images_dir() / safe_name
+    photo_path = photo_dir / safe_name
     if not photo_path.exists() or not photo_path.is_file():
         raise Http404("Photo not found")
 
     content_type, _encoding = mimetypes.guess_type(str(photo_path))
     return FileResponse(photo_path.open("rb"), content_type=content_type or "application/octet-stream")
+
+
+def local_photo_preview_view(_request, image_name: str):
+    return _local_photo_response(image_name, local_photo_images_dir())
+
+
+def local_photo_thumbnail_view(_request, image_name: str):
+    return _local_photo_response(image_name, local_photo_thumbnails_dir())

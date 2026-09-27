@@ -39,6 +39,13 @@ def local_photo_images_dir() -> Path:
     return Path(settings.BASE_DIR) / "dataset_images"
 
 
+def local_photo_thumbnails_dir() -> Path:
+    configured = os.getenv("LOCAL_PHOTO_THUMBNAILS_DIR")
+    if configured:
+        return Path(configured).expanduser()
+    return Path(settings.BASE_DIR) / "thumb"
+
+
 def should_use_local_photo_db() -> bool:
     return (
         _env_flag("LOCAL_PHOTO_DB_ENABLED", True)

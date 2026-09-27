@@ -204,7 +204,9 @@ secrets and large local datasets out of the upload ZIP.
 Elastic Beanstalk will build the repository's `Dockerfile`. The container
 listens on port `8080`, and the existing
 `.ebextensions/01-environment.config` configures `/health` as the health
-check path.
+check path. The `.platform/nginx/conf.d/01-upload-size.conf` file allows
+request bodies up to 10 MB, while the browser resizes camera selfies to a
+maximum dimension of 1280 pixels before upload.
 
 ## 8. Configure the environment and networking
 
@@ -304,6 +306,7 @@ Required properties:
 | `DATABASE_URL` | `postgresql://USER:PASSWORD@RDS_ENDPOINT:5432/photomatch` |
 | `S3_BUCKET` | Your private S3 bucket name |
 | `S3_IMAGE_PREFIX` | `dataset/` |
+| `S3_THUMBNAIL_PREFIX` | `thumb/` |
 | `LOCAL_PHOTO_DB_ENABLED` | `false` |
 
 Optional properties:

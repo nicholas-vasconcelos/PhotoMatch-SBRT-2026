@@ -37,6 +37,7 @@ Required:
 Optional:
 
 - `S3_IMAGE_PREFIX`: object prefix, default `dataset/`.
+- `S3_THUMBNAIL_PREFIX`: object prefix for result thumbnails, default `thumb/`.
 - `MATCH_THRESHOLD`: distance threshold, default `0.60`.
 - `DJANGO_DEBUG`: keep `false` in AWS.
 - `DJANGO_SECURE_SSL_REDIRECT`: set `true` after HTTPS and the HTTP
@@ -66,8 +67,14 @@ When running outside AWS, the app can use a local photo database automatically i
 - `LOCAL_PHOTO_DB_ENABLED` (optional, default `true`)
 - `LOCAL_PHOTO_DB_PATH` (optional, default `./THF_face_database.pkl`)
 - `LOCAL_PHOTO_IMAGES_DIR` (optional, defaults to `DATASET_IMAGES_DIR` or `./dataset_images`)
+- `LOCAL_PHOTO_THUMBNAILS_DIR` (optional, defaults to `./thumb`)
 
 If S3 is not configured and local mode is active, result previews are served from `/photos/<image_name>`.
+
+Camera uploads are resized in the browser to a maximum dimension of 1280 pixels
+before submission. The Elastic Beanstalk nginx proxy accepts requests up to
+10 MB as a fallback for large browser-generated image files; selfies are still
+processed only in memory by the request.
 
 ## Health check
 
