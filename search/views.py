@@ -21,6 +21,14 @@ from .s3 import build_presigned_thumbnail_url
 from .services import query_vector_matches
 
 
+def _confidence_tier(distance: float) -> str:
+    if distance < 0.45:
+        return "high"
+    if distance < 0.55:
+        return "likely"
+    return "possible"
+
+
 def _build_local_photo_url(image_name: str) -> str | None:
     if not should_use_local_photo_db():
         return None
@@ -66,6 +74,7 @@ def _aggregate_matches(matches: list[dict]) -> list[dict]:
             {
                 "image_name": item["image_name"],
                 "best_distance": item["best_distance"],
+                "confidence_tier": _confidence_tier(item["best_distance"]),
                 "matching_faces": counts[item["image_name"]],
                 "preview_url": preview_url,
                 "original_url": original_url,
